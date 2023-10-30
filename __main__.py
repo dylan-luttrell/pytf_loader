@@ -1,12 +1,10 @@
+# Main entry point for module if called from CLI
 import argparse
-from pprint import pprint
 from typing import Any
 
 import yaml
 
-from parse_tf.parse_data import parse_data_blocks
-from . import parse_module_blocks
-from . import parse_resource_blocks
+from . import parse_data_blocks, parse_module_blocks, parse_resource_blocks
 from pathlib import Path
 
 BLOCK_TYPES = ["module", "resource", "data"]

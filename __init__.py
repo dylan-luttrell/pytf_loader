@@ -1,2 +1,1 @@
-from .parse_modules import parse_module_blocks
-from .parse_resources import parse_resource_blocks
+from .parsers import parse_data_blocks, parse_module_blocks, parse_resource_blocks
