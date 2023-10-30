@@ -11,7 +11,7 @@ def _parse_resource_header(header: str) -> dict[str, str]:
     res_type = parts[1].strip("\"")
     res_name = parts[2].strip("\"")
     
-    return {"resource_type":res_type, "name": res_name}
+    return {"tf_resource_type":res_type, "tf_resource_name": res_name}
 
 def _parse_data_header(header: str) -> dict[str, str]:
     parts = header.split(" ")
@@ -19,4 +19,4 @@ def _parse_data_header(header: str) -> dict[str, str]:
     res_type = parts[1].strip("\"")
     res_name = parts[2].strip("\"")
     
-    return {"data_type":res_type, "name": res_name}
+    return {"tf_data_type":res_type, "tf_data_name": res_name}

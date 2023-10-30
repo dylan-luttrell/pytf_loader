@@ -12,7 +12,7 @@ from pathlib import Path
 BLOCK_TYPES = ["module", "resource", "data"]
 
 def _consulidate_types(blocks: list[dict[str, Any]], _type: str) -> dict[str, list[Any]]:
-    key = {"modules": "source", "resources": "resource_type", "data": "data_type"}[_type]
+    key = {"modules": "source", "resources": "tf_resource_type", "data": "tf_data_type"}[_type]
     output: dict[str, list[Any]] = {block[key]: [] for block in blocks}
 
     for block in blocks:
