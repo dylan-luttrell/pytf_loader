@@ -1,19 +1,8 @@
-#!/usr/bin/env python
-
-from collections import defaultdict
-from io import TextIOWrapper
 from pathlib import Path
-from pprint import pprint
-import csv
-from sys import stdout
-import json
-
-import yaml
-from _shared import parse_blocks
+from ._shared import parse_blocks
 
 
 BLOCK_TYPE = "module"
-FILES = ["../example.tf"]
 
 
 
@@ -81,19 +70,3 @@ def parse_module_blocks(filename: Path | str, module_name_filter: str | None = N
     lst_output = parse_blocks(filename, BLOCK_TYPE, module_name_filter)
     
     return lst_output
-
-# pprint(parse_tf_file(FILES[0]) or "")
-
-
-if __name__ == "__main__":
-    data = parse_module_blocks(FILES[0])
-    print(yaml.dump(data, indent=2))
-
-# keys = to_csv[0].keys()
-# if __name__ == "__main__":
-#     # with open('people.csv', 'w', newline='') as output_file:
-#     keys = ["resource_type", "resource_name", "type", "from_port", "to_port", "protocol", "security_group_id", "prefix_list_ids", "description"]
-
-#     dict_writer = csv.DictWriter(stdout, keys, extrasaction="ignore")
-#     dict_writer.writeheader()
-#     dict_writer.writerows(to_csv)

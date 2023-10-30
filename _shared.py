@@ -2,7 +2,8 @@ from cgi import parse_header
 from collections import defaultdict
 from io import StringIO, TextIOWrapper
 from re import match as re_match, compile as re_compile
-from header_parsers import _parse_module_header, _parse_resource_header
+from typing import Any
+from .header_parsers import _parse_data_header, _parse_module_header, _parse_resource_header
 from pathlib import Path
 
 # market to indicate new line in nested block
@@ -22,46 +23,76 @@ def _parse_terraform_map(map_str: str) -> dict[str, str]:
     
     return output
 
-def _convert_value_type(value: str) -> str:
+def _convert_value_type(value: str) -> Any:
+    """
+    Convert the given value to the appropriate data type.
 
+    Args:
+        value (str): The value to be converted.
+
+    Returns:
+        Any: The converted value.
+
+    """
+    # Check if the value is a numeric string
     if value.replace('.', '', 1).replace('-', '', 1).isnumeric():
         return float(value) if '.' in value else int(value)
+    
+    # Check if the value is a string enclosed in quotes
     elif value[0] in ['"', "'"] and value[-1] == value[0]:
         return value[1:-1]
+    
+    # Check if the value is a list
     elif value[0] == '[' and value[-1] == ']':
         return list(value[1:-1].split(','))
+    
+    # Check if the value is a map
     elif value[0] == '{' and value[-1] == '}':
         return _parse_terraform_map(value[1:-1])
     
+    # Revert temporary line substitution back to new line
     return value.replace(NEW_LINE_SUBSTITUTE, NEW_LINE)
 
 KEYS = set()
 
 
 def _grab_block(file: TextIOWrapper) -> str:
+    """
+    This function reads a file and grabs a block of code enclosed in braces.
+    
+    Args:
+        file (TextIOWrapper): The file object to read from.
+        
+    Returns:
+        str: The grabbed block of code as a string.
+    """
     braces = 1
     squares = 0
-    parenthases = 0
+    parenthesis = 0
     block = ""
     while braces > 0:
         line = next(file)
+        # strip comments from line
         line = comment_pattern.sub("", line).strip()
-        if len(line.strip()) == 0:
+        # skip if line is empty
+        if len(line) == 0:
             continue
+
+        # count nested block markers
         braces += line.count("{") - line.count("}")
         squares += line.count("[") - line.count("]")
-        parenthases += line.count("(") - line.count(")")
+        parenthesis += line.count("(") - line.count(")")
 
         block += f"{line}"
-        if braces > 1 or squares > 0 or parenthases > 0:
-            # consulidate nested blocks into single line for easier parsing later
+        if braces > 1 or squares > 0 or parenthesis > 0:
+            # substitute new line in nested blocks for easier parsing
             block += NEW_LINE_SUBSTITUTE
         else:
             block += '\n'
     # clean up block consulidating syntax
     block = block.replace('{' + NEW_LINE_SUBSTITUTE, '{').replace(NEW_LINE_SUBSTITUTE + '}', '}')
-    # print(block)
-    # exit()
+
+    # remove final curly brace and return
     return block.strip('}\n')
 
 def _parse_tf_block(file: TextIOWrapper) -> dict[str, str]:
@@ -88,27 +119,7 @@ def _parse_tf_block(file: TextIOWrapper) -> dict[str, str]:
         cur_key = tokens[0].strip()
         KEYS.add(cur_key)
         key_value_pairs[cur_key] += tokens[-1].strip()
-            
-    # braces = 1
-    # cur_key = ""
-    # key_value_pairs = defaultdict(str)
 
-    # while braces > 0:
-    #     line = next(file)
-    #     line = comment_pattern.sub("", line).strip()
-    #     if len(line) == 0:
-    #         continue
-    #     braces += line.count("{") - line.count("}")
-
-    #     if line == "}":
-    #         break
-        
-    #     tokens = line.split("=", maxsplit=1)
-    #     if len(tokens) == 2:
-    #         cur_key = tokens[0].strip()
-    #         KEYS.add(cur_key)
-
-    #     key_value_pairs[cur_key] += tokens[-1].strip()
 
     # convert values into an appropriate type and return as a dictionary
     return {key: _convert_value_type(value)
@@ -119,7 +130,8 @@ def _parse_tf_block(file: TextIOWrapper) -> dict[str, str]:
 
 _header_parser = {
     "module": _parse_module_header,
-    "resource": _parse_resource_header
+    "resource": _parse_resource_header,
+    "data": _parse_data_header
 }
 
 def parse_blocks(filename: Path | str, block_type: str, name_filter: str | None = None) -> list[dict[str, str]]:

@@ -12,3 +12,11 @@ def _parse_resource_header(header: str) -> dict[str, str]:
     res_name = parts[2].strip("\"")
     
     return {"resource_type":res_type, "name": res_name}
+
+def _parse_data_header(header: str) -> dict[str, str]:
+    parts = header.split(" ")
+
+    res_type = parts[1].strip("\"")
+    res_name = parts[2].strip("\"")
+    
+    return {"data_type":res_type, "name": res_name}
