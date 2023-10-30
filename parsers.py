@@ -1,4 +1,5 @@
 # This file is a collection of parsers for Terraform block types
+from typing import Any
 from .shared import parse_blocks
 from pathlib import Path
 
@@ -30,7 +31,12 @@ def parse_module_blocks(filename: Path | str, module_name_filter: str | None = N
         list[dict[str, str]]: A list of dictionaries containing the parsed resource information.
     """
 
-    lst_output = parse_blocks(filename, "module", module_name_filter)
+    lst_output: list[dict[str, Any]] = parse_blocks(filename, "module", module_name_filter)
+
+    # move source to top level
+    for res in lst_output:
+        res["source"] = res["arguments"]["source"]
+        del res["arguments"]["source"]
     
     return lst_output
 

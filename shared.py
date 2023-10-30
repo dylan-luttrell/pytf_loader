@@ -134,7 +134,7 @@ _header_parser = {
     "data": _parse_data_header
 }
 
-def parse_blocks(filename: Path | str, block_type: str, name_filter: str | None = None) -> list[dict[str, str]]:
+def parse_blocks(filename: Path | str, block_type: str, name_filter: str | None = None) -> list[dict[str, Any]]:
     """
     Parse a Terraform file and extract resource information based on the provided type filter.
 
@@ -164,14 +164,14 @@ def parse_blocks(filename: Path | str, block_type: str, name_filter: str | None 
                 # if line not a block of type given, skip
                 continue
 
-            data = parse_header(line)
+            data: dict[str, Any] = parse_header(line)
 
             if name_filter and not re_match(name_filter, data["name"]):
                 # ignore module if does not match filter
                 continue
 
 
-            data.update(_parse_tf_block(file))
+            data["arguments"] = _parse_tf_block(file)
 
             lst_output.append(data)
     
