@@ -36,13 +36,12 @@ block_types = BLOCK_TYPES if args.type == "all" else args.type.split(",")
 data = {str(file): dict() for file in file_list}
 for file in file_list:
     file_data = data[str(file)]
+    if "data" in block_types:
+        file_data["data"] = parse_data_blocks(file) or None
     if "module" in block_types:
         file_data["modules"] = parse_module_blocks(file) or None
     if "resource" in block_types:
         file_data["resources"] = parse_resource_blocks(file) or None
-    if "data" in block_types:
-        file_data["data"] = parse_data_blocks(file) or None
-
     if args.group:
         data[str(file)] = {_type: _consulidate_types(block, _type) for _type, block in file_data.items() if block}
 
